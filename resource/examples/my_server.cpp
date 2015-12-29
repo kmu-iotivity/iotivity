@@ -22,13 +22,13 @@ class LightResource
 public:
 
 	string resource_name, resource_uri, resource_typename, resource_interface;
-	bool resource_state;
+	string resource_state;
     int resource_power;
     OCResourceHandle resource_handle;
 	OCRepresentation resource_rep;
 	uint8_t resource_property;
 	
-	LightResource() : resource_name("Seongmin's light"), resource_state(false),
+	LightResource() : resource_name("Seongmin's light"), resource_state("off"),
 			  resource_power(0), resource_uri("/a/light"), resource_handle(nullptr),
 			  resource_typename("core.light")
 
@@ -70,6 +70,7 @@ public:
 		try 
 		{
 
+			cout << "----------------------------------------------" << endl;
 			if(rep.getValue("state", resource_state))
 			{
 				cout << "\t\t\t\t" << "state: " << resource_state << endl;
@@ -181,7 +182,7 @@ int main(int argc, char* argv[])
 
 	virtual_light.createResource();
 
-	cout << "virtual_light is created!\n";
+	cout << "virtual light is created!\n";
 	
 	mutex blocker;
     condition_variable cv;

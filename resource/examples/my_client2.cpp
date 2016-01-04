@@ -230,7 +230,12 @@ void putFirmware(std::shared_ptr<OCResource> resource, string input_filepath)
 	{
 	
 	
+		#ifdef __arm__
+		if((fin = fopen("/home/pi/Desktop/test_dir/in_dir/helloworld","rb")) == NULL)
+		#else
 		if((fin = fopen("/home/ysm/Desktop/temp_dir/in_dir/helloworld","rb")) == NULL)
+		#endif
+
 		{
 			fputs("file open error!\n", stderr);
 			return;

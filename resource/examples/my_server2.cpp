@@ -91,7 +91,14 @@ public:
 		{
 			if(count == 1)
 			{
+
+
+			#ifdef __arm__
+				fout = fopen("/home/pi/Desktop/test_dir/out_dir/copiedhello2", "wb");
+			#else
 				fout = fopen("/home/ysm/Desktop/temp_dir/out_dir/copiedhello2", "wb");
+
+			#endif
 
 			    if(fout == NULL)
        			{

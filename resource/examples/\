@@ -3,7 +3,6 @@
 #include <condition_variable>
 #include "OCPlatform.h"
 #include "OCApi.h"
-#include "base64.h"
 
 
 /*
@@ -71,11 +70,8 @@ public:
 
     OCRepresentation getFbuffer()
     {
-
-		OCRepresentation rep;
-    	rep.setValue("count", count);
-		rep.setValue("fbuff", resource_fbuffer);
-    	return rep;
+    	resource_rep.setValue("fbuff", resource_fbuffer);
+    	return resource_rep;
     }
 
 
@@ -85,50 +81,35 @@ public:
 		
 		rep.getValue("count", count);
 	
-		int n;
-		rep.getValue("n", n);
+	cout << "count : "<< count << endl;
+     	//string s_buffer;
+		size_t n = 1024;
 
 		if(count > 0)
 		{
 			if(count == 1)
 			{
-
-
-			#ifdef __arm__
-				fout = fopen("/home/pi/Desktop/test_dir/out_dir/copiedhello2", "wb");
-			#else
-				fout = fopen("/home/ysm/Desktop/temp_dir/out_dir/copiedhello2", "wb");
-
-			#endif
+				fout = fopen("/home/ysm/Desktop/temp_dir/out_dir/copiedhello", "wb");
 
 			    if(fout == NULL)
        			{
      	       		fputs("file open error!\n", stderr);
         	  		return;
         		}
-				
-				else cout << "out file is opened" << endl;
+
 			}
 
 	    	try
     	   	{
   
         		cout << "----------------------------------------------" << endl;
-				string encoded_str;           	 		
-
-				if(rep.getValue("fbuff", encoded_str))
+           	 		
+				if(rep.getValue("fbuff", resource_fbuffer))
            	 	{
+            		cout << "\t\t\t\t" << "file buffer : " << resource_fbuffer.c_str() << endl;
+					cout << "count : "<< count << endl;
+					fwrite(resource_fbuffer.c_str(), 1, n, fout);
 
-
-				
-					cout << "\t\t\t\t" << "buf size : " << encoded_str.size() << endl;
-					cout << "\t\t\t\t" << "count : "<< count << endl;
-					
-				string decoded_str = base64_decode(encoded_str);
-
-
-					if(fwrite(decoded_str.c_str(), sizeof(char), n, fout) != n)
-						cout << "쓰기 갯수가 다르다 !\n";
             	}
   
             	else
@@ -216,7 +197,7 @@ private:
 		
 				if(requestType == "GET")
 				{
-					//normal response로 처리하는 것임, slowresponse는 스레드를 생성하여 핸들러를 사용하는데, 이 프로그램에 선 아직 사용하지 않겠다.
+					//normal response로 처리하는 것임, slowresponse는 스레드를 생성하여 핸들러를 사용하는데, 이 프로그램에선 아직 사용하지 않겠다.
 					pResponse->setErrorCode(200); 
 					pResponse->setResponseResult(OC_EH_OK);
 					pResponse->setResourceRepresentation(get());
@@ -231,8 +212,9 @@ private:
 				{
 
 					OCRepresentation rep = request->getResourceRepresentation();
+					int count;
 
-					if(rep.getValue("count",count) > 0)		// count 값이 0 초과가 아니라 count라는 값이 전달됐을 경우를 말한다. (헷갈리기 쉽다.)
+					if(rep.getValue("count",count) > 0)
 					{
 
 						putFbuffer(rep);

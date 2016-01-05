@@ -1,5 +1,4 @@
 //#include <string>a
-#include <vector>
 #include <map>
 #include <iostream>
 #include <pthread.h>
@@ -7,6 +6,9 @@
 #include <condition_variable>
 #include "OCPlatform.h"
 #include "OCApi.h"
+#include "base64.h"
+
+#define BUF_SIZE 1024
 
 using namespace OC;
 using namespace std;
@@ -221,8 +223,8 @@ void onFput(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep,
 void putFirmware(std::shared_ptr<OCResource> resource, string input_filepath)
 {
 	FILE *fin;
-	//char buff[1024];
-	std::vector<char> buffer(1024);
+	unsigned char buff[1024];
+	string encoded_str;
 	int n;
 	int count = 0;
 	
@@ -243,19 +245,18 @@ void putFirmware(std::shared_ptr<OCResource> resource, string input_filepath)
 
 
 
-		while((n = fread(&buffer[0], sizeof(char), buffer.size(), fin)) != 0)
+		while((n = fread(buff, sizeof(char), BUF_SIZE, fin)) != 0)
 		{
 
 
 			OCRepresentation rep;
 			count++;
-			string s_buff(buffer.begin(), buffer.end());
+
+			string encoded_str = base64_encode(buff, n);
 
 
-
-
-			cout <<"buf size : " << s_buff.size() << endl;
-			rep.setValue("fbuff", s_buff);
+			cout <<"buf size : " << encoded_str.size() << endl;
+			rep.setValue("fbuff", encoded_str);
 			rep.setValue("count",count);
 			rep.setValue("n", n);
 			resource->put(rep, QueryParamsMap(), &onFput);

@@ -135,7 +135,10 @@ private:
 
 				else if(requestType == "PUT")
 				{
+
+
 					OCRepresentation rep = request->getResourceRepresentation();
+
 					put(rep);
 					pResponse->setErrorCode(200);
 					pResponse->setResponseResult(OC_EH_OK);
@@ -165,7 +168,6 @@ int main(int argc, char* argv[])
 {
 
 
-
     PlatformConfig cfg 
 	{
         OC::ServiceType::InProc,
@@ -176,6 +178,7 @@ int main(int argc, char* argv[])
     };
 
     OCPlatform::Configure(cfg);
+
 
 
 	LightResource virtual_light;

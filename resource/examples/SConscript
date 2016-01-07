@@ -86,10 +86,12 @@ lightserver = examples_env.Program('lightserver', 'lightserver.cpp')
 devicediscoveryserver = examples_env.Program('devicediscoveryserver', 'devicediscoveryserver.cpp')
 devicediscoveryclient = examples_env.Program('devicediscoveryclient', 'devicediscoveryclient.cpp')
 threadingsample = examples_env.Program('threadingsample', 'threadingsample.cpp')
-my_server = examples_env.Program('my_server', 'my_server.cpp')
+sensor_server = examples_env.Program('sensor_server', 'sensor_server.cpp')
 my_client = examples_env.Program('my_client', 'my_client.cpp')
 my_server2 = examples_env.Program('my_server2', 'my_server2.cpp')
 my_client2 = examples_env.Program('my_client2', 'my_client2.cpp')
+upgrade_server = examples_env.Program('upgrade_server', 'upgrade_server.cpp')
+
 
 Alias("examples", [simpleserver, simpleclient,
 		simpleserverHQ, simpleclientHQ,
@@ -100,7 +102,8 @@ Alias("examples", [simpleserver, simpleclient,
 		groupserver, groupclient,
 		lightserver,
 		devicediscoveryserver, devicediscoveryclient,
-		threadingsample, my_server, my_client, my_server2, my_client2
+		threadingsample, sensor_server, my_client, my_server2, my_client2,
+		upgrade_server
      ])
 env.AppendTarget('examples')
 

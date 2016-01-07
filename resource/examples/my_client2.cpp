@@ -21,6 +21,8 @@ bool ready;
 
 
 
+
+
 void onGet(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep, const int eCode)
 {
 
@@ -34,7 +36,7 @@ void onGet(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep, 
         {
 			cout << "----------------------------------------------" << endl;
             cout << "GET request was successful" << endl;
-            cout << "esource URI: " << rep.getUri() << endl;
+            cout << "Resource URI: " << rep.getUri() << endl;
 
             rep.getValue("state", state);
             rep.getValue("power", power);
@@ -165,6 +167,14 @@ void foundResource(std::shared_ptr<OCResource> resource)
             getRepresentation(curResource);
         }
 
+	    if(resourceURI == "/a/upgrade")
+        {
+        	curResource = resource;
+			cv.notify_one(); 
+        }
+
+
+
 	}
 	
 	else
@@ -220,22 +230,41 @@ void onFput(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep,
 
 
 
-void putFirmware(std::shared_ptr<OCResource> resource, string input_filepath)
+void putFirmware(string /*input_filepath*/)
 {
 	FILE *fin;
 	unsigned char buff[1024];
 	string encoded_str;
 	int n;
 	int count = 0;
-	
-	if(resource)
+
+	ostringstream requestURI;
+
+    requestURI << OC_RSRVD_WELL_KNOWN_URI << "?rt=rpi.upgrade";
+ 
+    OCPlatform::findResource("", requestURI.str(), CT_DEFAULT, &foundResource);
+    cout << "Finding Resource... " << endl;
+ 
+    {
+        mutex blocker;
+        unique_lock<std::mutex> lock(blocker);
+        cv.wait(lock);
+    }
+
+
+
+
+
+
+
+	if(curResource)
 	{
 	
 	
 		#ifdef __arm__
-		if((fin = fopen("/home/pi/Desktop/test_dir/in_dir/helloworld","rb")) == NULL)
+		if((fin = fopen("/home/ysm/iotivity/out/linux/x86_64/release/resource/examples/sensor_server","rb")) == NULL)
 		#else
-		if((fin = fopen("/home/ysm/Desktop/temp_dir/in_dir/helloworld","rb")) == NULL)
+		if((fin = fopen("/home/ysm/iotivity/out/linux/x86_64/release/resource/examples/sensor_server","rb")) == NULL)
 		#endif
 
 		{
@@ -259,7 +288,7 @@ void putFirmware(std::shared_ptr<OCResource> resource, string input_filepath)
 			rep.setValue("fbuff", encoded_str);
 			rep.setValue("count",count);
 			rep.setValue("n", n);
-			resource->put(rep, QueryParamsMap(), &onFput);
+			curResource->put(rep, QueryParamsMap(), &onFput);
 
             mutex blocker;
             unique_lock<std::mutex> lock(blocker);
@@ -273,7 +302,7 @@ void putFirmware(std::shared_ptr<OCResource> resource, string input_filepath)
 			OCRepresentation rep;
 			count = -1;
             rep.setValue("count",count);
-			resource->put(rep, QueryParamsMap(), &onFput);
+			curResource->put(rep, QueryParamsMap(), &onFput);
 
 		}
 			
@@ -303,7 +332,7 @@ int main(int argc, char* argv[])
 
 	OCPlatform::Configure(cfg);
 
-	requestURI << OC_RSRVD_WELL_KNOWN_URI;
+	requestURI << OC_RSRVD_WELL_KNOWN_URI << "?rt=core.light";
 
     OCPlatform::findResource("", requestURI.str(), CT_DEFAULT, &foundResource);
     cout << "Finding Resource... " << endl;
@@ -339,7 +368,7 @@ int main(int argc, char* argv[])
 				
 			case 1:
 				getRepresentation(curResource);
-				break;
+			break;
 
 			case 2:
 				cout << "input state value (\"on\" or \"off\")" << endl;
@@ -361,7 +390,7 @@ int main(int argc, char* argv[])
 			case 3:
 				cout << "input filepath" << endl;
 				cin >> input_filepath;
-				putFirmware(curResource, input_filepath);
+				putFirmware(input_filepath);
 				break;
 				
 			case 4:

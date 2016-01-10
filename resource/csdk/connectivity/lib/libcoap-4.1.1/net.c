@@ -605,6 +605,9 @@ coap_send_impl(coap_context_t *context,
     ssize_t bytes_written;
     coap_tid_t id = COAP_INVALID_TID;
 
+
+
+
     if ( !context || !dst || !pdu )
     return id;
 

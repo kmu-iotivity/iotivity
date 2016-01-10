@@ -197,17 +197,7 @@ void onFput(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep,
     {
     	if(eCode == OC_STACK_OK)
         {
-        	cout << "----------------------------------------------" << endl;
-            rep.getValue("fbuff", s_buff);
-            cout << "file buffer : " << s_buff.c_str() << endl;
-			rep.getValue("count", count);
-			cout << "count : " << count << endl;
-
- 			if(count == -1)
-			{
-				cout << "The firmware is transferred completely" << endl;
-	       		count = 0;	
-			}
+        	cout << "file transfer is completed" << endl;
 		}
  
         else
@@ -223,7 +213,6 @@ void onFput(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep,
  
     ready = true;
     cv.notify_one();
-	cv2.notify_one();
 
  }
 
@@ -234,7 +223,7 @@ void putFirmware(string /*input_filepath*/)
 {
 	FILE *fin;
 	unsigned char buff[1024];
-	string encoded_str;
+	vector<string> encoded_strs;
 	int n;
 	int count = 0;
 
@@ -250,12 +239,6 @@ void putFirmware(string /*input_filepath*/)
         unique_lock<std::mutex> lock(blocker);
         cv.wait(lock);
     }
-
-
-
-
-
-
 
 	if(curResource)
 	{
@@ -277,37 +260,18 @@ void putFirmware(string /*input_filepath*/)
 		while((n = fread(buff, sizeof(char), BUF_SIZE, fin)) != 0)
 		{
 
-
-			OCRepresentation rep;
 			count++;
-
-			string encoded_str = base64_encode(buff, n);
-
-
-			cout <<"buf size : " << encoded_str.size() << endl;
-			rep.setValue("fbuff", encoded_str);
-			rep.setValue("count",count);
-			rep.setValue("n", n);
-			curResource->put(rep, QueryParamsMap(), &onFput);
-
-            mutex blocker;
-            unique_lock<std::mutex> lock(blocker);
-            cv2.wait(lock);
+			encoded_strs.push_back(base64_encode(buff, n));
 	
 		}
 
-		if(n==0)
-		{
 
 			OCRepresentation rep;
-			count = -1;
-            rep.setValue("count",count);
+			cout << "read count : " << encoded_strs.size() << endl;
+			rep.setValue("fbuff", encoded_strs);
 			curResource->put(rep, QueryParamsMap(), &onFput);
-
-		}
-			
-
-		fclose(fin);
+		
+			fclose(fin);
 	
 	}
 

@@ -419,6 +419,7 @@ static int CACreateSocket(int family, uint16_t *port)
                       ((struct sockaddr_in *)&sa)->sin_port);
     }
 
+
     return fd;
 }
 
@@ -848,6 +849,8 @@ static void sendData(int fd, const CAEndpoint_t *endpoint,
                      const void *data, uint32_t dlen,
                      const char *cast, const char *fam)
 {
+
+
     OIC_LOG(DEBUG, TAG, "IN");
 
     char *secure = (endpoint->flags & CA_SECURE) ? "secure " : "";

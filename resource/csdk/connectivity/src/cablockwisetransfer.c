@@ -177,7 +177,7 @@ CAResult_t CASendBlockWiseData(const CAData_t *sendData)
     if (CA_STATUS_OK != res)
     {
         // #2. if it is not included, add the data into list
-        if (!currData)
+         if (!currData)
         {
             OIC_LOG(DEBUG, TAG, "There is no block data");
 

@@ -67,55 +67,28 @@ int getProcIdByName(string procName)
 }
 
 
- 	void onUpgrade(const HeaderOptions& /*headerOptions*/, const OCRepresentation& rep, const int eCode)
-    {
-  	
-  		try
-      	{
-        	if(eCode == OC_STACK_OK)
-          	{
-  				//Run program
-				system("/home/ysm/Desktop/temp_dir/out_dir/copiedhello22");  				
-
-
-          	}
-         	else
-         	{
-            	cout << "onUpgrade Response error: " << eCode << endl;
-            	exit(-1);
-         	}
-     	}
-    	catch(exception& e)
-     	{
-       		cout << "Exception: " << e.what() << " in onUpgrade" << endl;
-     	}
- 
- 	}
-
 class Upgrader
 {
 
 public:
 
 	string resource_name, resource_uri, resource_typename, resource_interface;
-    int count;
     OCResourceHandle resource_handle;
 	OCRepresentation resource_rep;
+	vector<string> resource_fbuffer;
 	uint8_t resource_property;
-	string resource_fbuffer;
 	FILE *fout;
 
 
 	Upgrader() : resource_name("rpi upgrade server"), 
 			  resource_uri("/a/upgrade"), resource_handle(nullptr),
-			  resource_typename("rpi.upgrade"), resource_fbuffer(""), count(0)
+			  resource_typename("rpi.upgrade")
 
 	{
 		resource_interface = DEFAULT_INTERFACE;
 		resource_property = OC_DISCOVERABLE;
 		resource_rep.setUri(resource_uri);
 		resource_rep.setValue("name", resource_name);
-		resource_rep.setValue("fbuff", resource_fbuffer);
 	}
 
 
@@ -137,7 +110,6 @@ public:
     {
 
 		OCRepresentation rep;
-    	rep.setValue("count", count);
 		rep.setValue("fbuff", resource_fbuffer);
     	return rep;
     }
@@ -148,58 +120,35 @@ public:
 
 	void putFbuffer(OCRepresentation& rep)
 	{
-		
-		rep.getValue("count", count);
-	
-		int n;
-		rep.getValue("n", n);
 
-		if(count > 0)
-		{
-			if(count == 1)
-			{
+			string encoded_str;
 
-			#ifdef __arm__
-				fout = fopen("/home/pi/Desktop/test_dir/out_dir/copiedhello22", "wb");
-			#else
-				fout = fopen("/home/ysm/iotivity/out/linux/x86_64/release/resource/examples/sensor_server2", "wb");
+		#ifdef __arm__
+			fout = fopen("/home/pi/Desktop/test_dir/out_dir/copiedhello22", "wb");
+		#else
+			fout = fopen("/home/ysm/iotivity/out/linux/x86_64/release/resource/examples/sensor_server2", "wb");
+		#endif
 
-			#endif
-
-			    if(fout == NULL)
-       			{
-     	       		fputs("file open error!\n", stderr);
-        	  		return;
-        		}
+		    if(fout == NULL)
+       		{
+   	       		fputs("file open error!\n", stderr);
+       	  		return;
+       		}
 				
-				else cout << "out file is opened" << endl;
-			}
+			else cout << "out file is opened" << endl;
 
-	    	try
-    	   	{
+	   		try
+       		{
   
-        		cout << "----------------------------------------------" << endl;
-				string encoded_str;           	 		
-
-				if(rep.getValue("fbuff", encoded_str))
-           	 	{
-
+       			cout << "----------------------------------------------" << endl;
 
 				
-					cout << "\t\t\t\t" << "buf size : " << encoded_str.size() << endl;
-					cout << "\t\t\t\t" << "count : "<< count << endl;
-					
-					string decoded_str = base64_decode(encoded_str);
-
-
-					if(fwrite(decoded_str.c_str(), sizeof(char), n, fout) != n)
-						cout << "쓰기 갯수가 다르다 !\n";
-            	}
+				for(vector<string>::iterator it = resource_fbuffer.begin(); it != resource_fbuffer.end(); it++ )
+				{				
+					string decoded_str = base64_decode(*it);
+					fwrite(decoded_str.c_str(), sizeof(char), decoded_str.size(), fout);
+				}
   
-            	else
-            	{
-               		cout << "\t\t\t\t" << "fbuff not found in the representation" << endl;
-            	}
  
         	}	
  
@@ -208,12 +157,7 @@ public:
             	cout << e.what() << endl;
        		}
 	
-		}
-
-		else if(count == -1)
-		{
 			fclose(fout);
-			resource_fbuffer = "";
 			cout << "\t\t\t\t" << "The firmware is transferred completely" << endl;
 			
 
@@ -229,7 +173,6 @@ public:
 			system("chmod 777 /home/ysm/iotivity/out/linux/x86_64/release/resource/examples/sensor_server3");
 			system("/home/ysm/iotivity/out/linux/x86_64/release/resource/examples/sensor_server3");
 
-		}
 
 	}
 
@@ -259,14 +202,14 @@ private:
 
 					OCRepresentation rep = request->getResourceRepresentation();
 
-					if(rep.getValue("count",count) > 0)		// count 값이 0 초과가 아니라 count라는 값이 전달됐을 경우를 말한다. (헷갈리기 쉽다.)
+					if(rep.getValue("fbuff",resource_fbuffer) > 0)		// resource_fbuffer 값이 0 초과가 아니라 값이 전달됐을 경우를 말한다. (헷갈리기 쉽다.)
 					{
 
 						putFbuffer(rep);
  	                    pResponse->setErrorCode(200);
     	                pResponse->setResponseResult(OC_EH_OK);
-        	            pResponse->setResourceRepresentation(getFbuffer());
-     
+        	            pResponse->setResourceRepresentation(getFbuffer());			
+
                     	if(OC_STACK_OK == OCPlatform::sendResponse(pResponse))
                     	{   
                     		ehResult = OC_EH_OK;

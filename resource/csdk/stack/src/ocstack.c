@@ -2522,8 +2522,8 @@ OCStackResult OCDoResource(OCDoHandle *handle,
     }
 
     devAddr = NULL;       // Client CB list entry now owns it
-    resourceUri = NULL;   // Client CB list entry now owns it
-    resourceType = NULL;  // Client CB list entry now owns it
+     resourceUri = NULL;   // Client CB list entry now owns it
+     resourceType = NULL;  // Client CB list entry now owns it
 
     // send request
     result = OCSendRequest(&endpoint, &requestInfo);

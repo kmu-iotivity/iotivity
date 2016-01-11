@@ -167,13 +167,6 @@ void foundResource(std::shared_ptr<OCResource> resource)
             getRepresentation(curResource);
         }
 
-	    if(resourceURI == "/a/upgrade")
-        {
-        	curResource = resource;
-			cv.notify_one(); 
-        }
-
-
 
 	}
 	
@@ -227,18 +220,6 @@ void putFirmware(string /*input_filepath*/)
 	int n;
 	int count = 0;
 
-	ostringstream requestURI;
-
-    requestURI << OC_RSRVD_WELL_KNOWN_URI << "?rt=rpi.upgrade";
- 
-    OCPlatform::findResource("", requestURI.str(), CT_DEFAULT, &foundResource);
-    cout << "Finding Resource... " << endl;
- 
-    {
-        mutex blocker;
-        unique_lock<std::mutex> lock(blocker);
-        cv.wait(lock);
-    }
 
 	if(curResource)
 	{
